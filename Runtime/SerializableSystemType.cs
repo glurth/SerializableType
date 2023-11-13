@@ -33,9 +33,32 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         type = Type.GetType(typeName);
         if (type == null)
         {
-          //  Debug.Log("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName);
+            //  Debug.Log("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName);
             return;
         }
-        
+
+    }
+    // Override Equals method
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+        Type objType = obj.GetType();
+        if (objType == typeof(System.Type))
+        {
+            return type == (Type)obj;
+        }
+        if (GetType() != obj.GetType())
+        {
+            return false;
+        }
+
+        SerializableSystemType other = (SerializableSystemType)obj;
+        return type == other.type;
+    }
+
+    // Override GetHashCode method
+    public override int GetHashCode()
+    {
+        return type.GetHashCode();
     }
 }
