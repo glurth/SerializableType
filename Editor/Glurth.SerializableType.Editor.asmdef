@@ -1,0 +1,17 @@
+{
+    "name": "Glurth.SerializableType.Editor",
+    "references": [
+        "Glurth.SerializableType"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

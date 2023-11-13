@@ -1,0 +1,12 @@
+{
+  "name": "com.glurth.serializabletype",
+  "version": "1.0.0",
+  "displayName": "SerializableType",
+  "description": "SerializableType and PropertyDrawer",
+  "unity": "2019.1",
+  "dependencies": {},
+  "author": {
+    "name": "Glurth"
+  },
+  "hideInEditor": "false"
+}
