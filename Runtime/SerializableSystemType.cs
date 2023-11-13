@@ -24,7 +24,8 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         }
         else
         {
-            typeName = "null";
+            if(Type.GetType(typeName)==null)
+                typeName = "null";
         }
 
     }
