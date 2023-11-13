@@ -33,7 +33,7 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         type = Type.GetType(typeName);
         if (type == null)
         {
-            //  Debug.Log("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName);
+            Debug.Log("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName + "'");
             return;
         }
 
