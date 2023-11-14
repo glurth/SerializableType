@@ -185,7 +185,7 @@ public class EditorPopupWithTextFilter
                 Vector2 mousePos = Event.current.mousePosition - pos.position; // position inside drawRect
                 mousePos += scrollPos;// position inside scrollRect
                 int clickedElement =(int)( mousePos.y / EditorGUIUtility.singleLineHeight);
-                Debug.Log("click element " + clickedElement);
+               // Debug.Log("click element " + clickedElement);
                 Event.current.Use();
                 selectedElement = clickedElement;
                 GUI.FocusControl("Next");

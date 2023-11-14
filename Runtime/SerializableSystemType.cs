@@ -9,7 +9,7 @@ public class SerializableSystemType : ISerializationCallbackReceiver
 
     //[HideInInspector]
     [SerializeField]
-    string typeName;
+    public string typeName;
 
     public SerializableSystemType(Type type)
     {
@@ -21,20 +21,33 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         if (type != null)
         {
             typeName = type.AssemblyQualifiedName;
+           // Debug.Log("Success serializing : '" + typeName + "'");
         }
         else
         {
-            if(Type.GetType(typeName)==null)
-                typeName = "null";
+            if (typeName == null)
+            {
+              //  Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null");
+               // typeName = "null";
+            }
+            if(Type.GetType(typeName) == null)
+            {
+            //    Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'");
+               // typeName = "null";
+            }
         }
 
     }
     public void OnAfterDeserialize()
     {
+        if (typeName == null)
+        {
+            Debug.LogWarning("SerializableTypeInfo Error: Unable to Deserialize type- typeName is null");
+        }
         type = Type.GetType(typeName);
         if (type == null)
         {
-            Debug.Log("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName + "'");
+            Debug.LogWarning("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName + "'");
             return;
         }
 

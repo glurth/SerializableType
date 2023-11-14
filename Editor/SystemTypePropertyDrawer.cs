@@ -68,6 +68,7 @@ namespace EyE.EditorUnity.Extensions
 
             if (selected != -1)
             {
+                
                 string selectedTypeName = allTypesCashedAQNames[selected];
 
                 if (selectedTypeName != null && selectedTypeName != "")
@@ -75,7 +76,8 @@ namespace EyE.EditorUnity.Extensions
                     //Debug.Log("Searching for type: " + selectedTypeName);
                     seriTypeObj.type = Type.GetType(selectedTypeName);
                 }
-
+                property.serializedObject.ApplyModifiedProperties();
+                EditorUtility.SetDirty(property.serializedObject.targetObject);
             }
 
             if (seriTypeObj.type != null)
