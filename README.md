@@ -62,4 +62,4 @@ public class MyMonoBehaviour : MonoBehaviour
 
 ###Editor
 Contains a proerty drawer to allow users to select a type from a filterable drop down list of all types.
-![Editor Example](https://github.com/glurth/SerializableType/EditorExample.png)
+![Editor Example](https://github.com/glurth/SerializableType/blob/main/EditorExample.png)
