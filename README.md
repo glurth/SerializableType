@@ -59,3 +59,6 @@ public class MyMonoBehaviour : MonoBehaviour
 
 }
 
+###Editor
+Contains a proerty drawer to allow users to select a type from a filterable drop down list of all types.
+![Editor Example](EditorExample.png)
