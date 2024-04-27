@@ -1,43 +1,60 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
+/// <summary>
+/// This class facilitates serialization of System.Type objects in Unity by converting them to strings (using AssemblyQualifiedName) during serialization and back to types during deserialization.
+/// </summary>
 [System.Serializable]
 public class SerializableSystemType : ISerializationCallbackReceiver
 {
+    /// <summary>
+    /// The actual System.Type object being wrapped.
+    /// </summary>
     public Type type;
 
-    //[HideInInspector]
+    /// <summary>
+    /// String representation of the type object (AssemblyQualifiedName). 
+    /// Used for serialization purposes.
+    /// </summary>
     [SerializeField]
     public string typeName;
 
+    /// <summary>
+    /// Constructor that initializes the class with a given System.Type object.
+    /// </summary>
+    /// <param name="type">The System.Type object to wrap.</param>
     public SerializableSystemType(Type type)
     {
         this.type = type;
     }
 
+    /// <summary>
+    /// This method is called before serialization. It converts the `type` object to its assembly qualified name and stores it in `typeName`.
+    /// </summary>
     public void OnBeforeSerialize()
     {
         if (type != null)
         {
             typeName = type.AssemblyQualifiedName;
-           // Debug.Log("Success serializing : '" + typeName + "'");
+            // Debug.Log("Success serializing : '" + typeName + "'"); // Commented out for production use
         }
         else
         {
             if (typeName == null)
             {
-              //  Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null");
-               // typeName = "null";
+                // Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null"); // Commented out for production use
+                // typeName = "null";
             }
-            if(Type.GetType(typeName) == null)
+            if (Type.GetType(typeName) == null)
             {
-            //    Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'");
-               // typeName = "null";
+                // Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'"); // Commented out for production use
+                // typeName = "null";
             }
         }
-
     }
+
+    /// <summary>
+    /// This method is called after deserialization. It attempts to convert the stored `typeName` back to a `Type` object.
+    /// </summary>
     public void OnAfterDeserialize()
     {
         if (typeName == null)
@@ -50,8 +67,8 @@ public class SerializableSystemType : ISerializationCallbackReceiver
             Debug.LogWarning("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName + "'");
             return;
         }
-
     }
+
     // Override Equals method
     public override bool Equals(object obj)
     {
@@ -76,3 +93,4 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         return type.GetHashCode();
     }
 }
+
