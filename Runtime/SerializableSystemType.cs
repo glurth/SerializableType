@@ -28,6 +28,12 @@ public class SerializableSystemType : ISerializationCallbackReceiver
     }
 
     /// <summary>
+    /// Implicitly converts to a System.Type, so it can be used directly as one.
+    /// </summary>
+    /// <param name="st"></param>
+    public static implicit operator Type(SerializableSystemType st) => st.type;
+
+    /// <summary>
     /// This method is called before serialization. It converts the `type` object to its assembly qualified name and stores it in `typeName`.
     /// </summary>
     public void OnBeforeSerialize()
@@ -41,12 +47,12 @@ public class SerializableSystemType : ISerializationCallbackReceiver
         {
             if (typeName == null)
             {
-                // Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null"); // Commented out for production use
+                Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null"); // Commented out for production use
                 // typeName = "null";
             }
             if (Type.GetType(typeName) == null)
             {
-                // Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'"); // Commented out for production use
+                Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'"); // Commented out for production use
                 // typeName = "null";
             }
         }

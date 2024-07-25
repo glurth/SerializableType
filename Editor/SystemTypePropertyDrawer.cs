@@ -27,6 +27,7 @@ namespace EyE.EditorUnity.Extensions
 
             if (allTypesCashedNames == null)
             {
+                string limitToNamespace = GetLimitingNamespace(property);//new
                 List<Type> typesFound = new List<Type>();
                 allTypesCashedNames = new List<string>();
                 allTypesCashedAQNames = new List<string>();
@@ -35,9 +36,8 @@ namespace EyE.EditorUnity.Extensions
 
                     foreach (Type t in asm.GetExportedTypes())
                     {
-                        typesFound.Add(t);
-                        //  allTypesCashedNames.Add(t.Name);
-                        // allTypesCashedAQNames.Add(t.AssemblyQualifiedName);
+                        if(limitToNamespace==null || t.Namespace == limitToNamespace)//new
+                            typesFound.Add(t);
                     }
                 }
                 typesFound.Sort(
@@ -99,6 +99,23 @@ namespace EyE.EditorUnity.Extensions
             if (filterPopupList != null)
                 height += filterPopupList.GetHeight();
             return height;
+        }
+
+        /// <summary>
+        /// Gets the limiting namespace from the property drawer's attribute.
+        /// </summary>
+        /// <param name="property">The serialized property being drawn.</param>
+        /// <returns>The limiting namespace, or null if no namespace is specified.</returns>
+        public static string GetLimitingNamespace(SerializedProperty property)
+        {
+            if (property == null) throw new ArgumentNullException(nameof(property));
+
+            // Get the field info and attribute
+            var fieldInfo = property.serializedObject.targetObject.GetType().GetField(property.propertyPath);
+            if (fieldInfo == null) return null;
+
+            var attribute = Attribute.GetCustomAttribute(fieldInfo, typeof(EditorLimitSelectionToNamespaceAttribute)) as EditorLimitSelectionToNamespaceAttribute;
+            return attribute?.Namespace;
         }
 
     }

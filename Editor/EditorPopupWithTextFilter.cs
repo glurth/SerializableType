@@ -62,11 +62,12 @@ public class EditorPopupWithTextFilter
             selectedElement = foundPreviousSelectionAt;
         }// end filter text changed
 
-        if (containing.Count > 0)
+        //if (containing.Count > 0)
         {
+          //  Debug.Log("Checking Focus");
             if (GUI.GetNameOfFocusedControl() == "FilterText")
             {
-                //  Debug.Log("Filter text has focus");
+              //  Debug.Log("Filter text has focus.  had it lastpass:"+ textHadFocusLastPass);
                 popupPosition = position;
                 popupPosition.xMin += 30;
                 popupPosition.height += 300;
@@ -85,7 +86,15 @@ public class EditorPopupWithTextFilter
                 if (hoverSelection != -1)// a list element has been selected
                 {
                     overrideHideList = true;
-                    currentFilterText = containing[hoverSelection];
+                    if (hoverSelection < containing.Count)
+                        currentFilterText = containing[hoverSelection];
+                    else
+                    {
+                        if (containing.Count == 0)
+                            currentFilterText = "";
+                        else
+                            currentFilterText = containing[containing.Count - 1];
+                    }
                     containing.Clear();
                     string filterAsLowercase = currentFilterText.ToLower();
                     foreach (string s in fullList)
@@ -110,13 +119,14 @@ public class EditorPopupWithTextFilter
 
     Vector2 scrollPos = Vector2.zero;
     /// <summary>
-    /// 
+    /// Draws the popup list
     /// </summary>
     /// <param name="pos"></param>
     /// <param name="overrideSelection"></param>
     /// <returns>when enter is pressed, while an item on the list is highlighted, it returns the index of that item.  returns -1 otherwise</returns>
     int HoverTextListWindow(Rect pos, int overrideSelection = int.MinValue)
     {
+        //Debug.Log("drawing popup list");
         if (overrideSelection != int.MinValue)
             selectedElement = overrideSelection;
 
@@ -127,6 +137,7 @@ public class EditorPopupWithTextFilter
         Rect insideScrollRect = listSizeRect;
         insideScrollRect.height = EditorGUIUtility.singleLineHeight;
 
+        //Debug.Log("drawing list rect height:" + pos.ToString());
         EditorGUI.DrawRect(pos, Color.white);
         scrollPos=GUI.BeginScrollView(pos, scrollPos, listSizeRect);
         int counter = 0;
@@ -136,7 +147,7 @@ public class EditorPopupWithTextFilter
                 EditorGUI.DrawRect(insideScrollRect, Color.grey);
             EditorGUI.LabelField(insideScrollRect, s);
             insideScrollRect.y += EditorGUIUtility.singleLineHeight;
-            
+            //Debug.Log("drawing list element");
             counter++;
         }
 
