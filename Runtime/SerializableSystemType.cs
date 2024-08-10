@@ -50,7 +50,7 @@ public class SerializableSystemType : ISerializationCallbackReceiver
                 Debug.LogWarning("Unable to Serialize type:  Type member is null, and typeName is null"); // Commented out for production use
                 // typeName = "null";
             }
-            if (Type.GetType(typeName) == null)
+            else if (Type.GetType(typeName) == null)
             {
                 Debug.LogWarning("Unable to Serialize type:  Type member is null, and unable to find valid Type of name '" + typeName + "'"); // Commented out for production use
                 // typeName = "null";
