@@ -6,6 +6,8 @@ using System;
 [System.Serializable]
 public class SerializableSystemType : ISerializationCallbackReceiver
 {
+    public static bool logWarnings = false;
+
     /// <summary>
     /// The actual System.Type object being wrapped.
     /// </summary>
@@ -43,7 +45,7 @@ public class SerializableSystemType : ISerializationCallbackReceiver
             typeName = type.AssemblyQualifiedName;
             // Debug.Log("Success serializing : '" + typeName + "'"); // Commented out for production use
         }
-        else
+        else if(logWarnings)
         {
             if (typeName == null)
             {
@@ -65,13 +67,15 @@ public class SerializableSystemType : ISerializationCallbackReceiver
     {
         if (typeName == null)
         {
-            Debug.LogWarning("SerializableTypeInfo Error: Unable to Deserialize type- typeName is null");
+            if(logWarnings)
+                Debug.LogWarning("SerializableTypeInfo Error: Deserializing type- typeName is null");
+            type = null;
+            return;
         }
         type = Type.GetType(typeName);
-        if (type == null)
+        if (logWarnings && type == null)
         {
             Debug.LogWarning("SerializableTypeInfo Error: Unable to Deserialize type '" + typeName + "'");
-            return;
         }
     }
 
@@ -80,11 +84,11 @@ public class SerializableSystemType : ISerializationCallbackReceiver
     {
         if (obj == null) return false;
         Type objType = obj.GetType();
-        if (objType == typeof(System.Type))
+        if (objType == typeof(System.Type))// if other object is a System.Type
         {
             return type == (Type)obj;
         }
-        if (GetType() != obj.GetType())
+        if (objType != typeof(SerializableSystemType))//if other objects is not a SerializableSystemType
         {
             return false;
         }
