@@ -7,8 +7,6 @@ using System.Reflection;
 //using EyE.Sys.Reflection;
 namespace EyE.EditorUnity.Extensions
 {
-
-
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
     public class SystemTypePropertyDrawer : PropertyDrawer
     {
@@ -16,14 +14,26 @@ namespace EyE.EditorUnity.Extensions
         List<string> allTypesCashedAQNames = null;
 
         EditorPopupWithTextFilter filterPopupList = null;
-        /*static int CompareTypeNames(Type t1, Type t2)
-        {
-            return t1.Name.CompareTo(t2.Name);
-        }*/
+        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+           // Debug.Log($"SystemTypePropertyDrawer Detected event: {Event.current.type}");
+            SerializableSystemType seriTypeObj = (SerializableSystemType)property.GetValue();
             if (filterPopupList == null)
+            {
                 filterPopupList = new EditorPopupWithTextFilter();
+                
+                //SerializableSystemType seriTypeObj = (SerializableSystemType)GetValue(property);
+                if (seriTypeObj.type != null)
+                {
+                    //EditorGUI.LabelField(position, "TypeName", seriTypeObj.type.Name);
+                    filterPopupList.SetText(seriTypeObj.type.Name);
+                }
+                else
+                {
+                    filterPopupList.SetText("");
+                }
+            }
 
             if (allTypesCashedNames == null)
             {
@@ -53,22 +63,12 @@ namespace EyE.EditorUnity.Extensions
                 }
             }
 
-            SerializableSystemType seriTypeObj = (SerializableSystemType)property.GetValue();
-            //SerializableSystemType seriTypeObj = (SerializableSystemType)GetValue(property);
-            if (seriTypeObj.type != null)
-            {
-                //EditorGUI.LabelField(position, "TypeName", seriTypeObj.type.Name);
-                filterPopupList.SetText(seriTypeObj.type.Name);
-            }
-
-
             string typeFQName = "*";
             int selected = filterPopupList.Draw(position, allTypesCashedNames, label);
-            //int selected = filterPopupList.DrawByWindow(position, allTypesCashedNames);
 
             if (selected != -1)
             {
-                
+
                 string selectedTypeName = allTypesCashedAQNames[selected];
 
                 if (selectedTypeName != null && selectedTypeName != "")
