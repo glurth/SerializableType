@@ -31,6 +31,9 @@ public class EditorPopupWithTextFilter
     // current scroll position of list, only y used
     Vector2 scrollPos = Vector2.zero;
 
+    string filterControlName = "FilterText" + new GUID().ToString();
+    string nextControlName = "Next" + new GUID().ToString();
+
     //user adjustable value- hight of dropdown. default 300
     public float popupMaxHeight = 300f;
     // the text inside the userEditable TextField last time we looked
@@ -68,10 +71,10 @@ public class EditorPopupWithTextFilter
         
         if (label == null) label = new GUIContent("Filter");
 
-        GUI.SetNextControlName("FilterText");
+        GUI.SetNextControlName(filterControlName);
         string newFilter = EditorGUI.TextField(position, label, currentFilterText);
 
-        GUI.SetNextControlName("Next");
+        GUI.SetNextControlName(nextControlName);
         position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         drawnHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         if (textChanged || newFilter != currentFilterText) //if filter text has been changed by user- recompute filter list
@@ -107,7 +110,7 @@ public class EditorPopupWithTextFilter
         //  Debug.Log("Checking Focus");
 
         if (!hasFocus && Event.current.type != EventType.ScrollWheel)
-            hasFocus = GUI.GetNameOfFocusedControl() == "FilterText";
+            hasFocus = GUI.GetNameOfFocusedControl() == filterControlName;
         if (hasFocus)
         {
             //Debug.Log("Filter text has focus.  had it lastpass:"+ textHadFocusLastPass);
@@ -218,7 +221,7 @@ public class EditorPopupWithTextFilter
             scrollPos.y = Mathf.Clamp(scrollPos.y, 0, fiteredListConents.Count * EditorGUIUtility.singleLineHeight - pos.height);
 
             Event.current.Use();
-            GUI.FocusControl("FilterText");
+            GUI.FocusControl(filterControlName);
         }
         return -1;
     }
@@ -226,20 +229,21 @@ public class EditorPopupWithTextFilter
     {
         if (Event.current.type == EventType.MouseUp)//Event.current.isMouse)
         {
-            
             if (pos.Contains(Event.current.mousePosition))
             {
-                
+
                 //convert mouse screen pos into scrollRectPos
                 Vector2 mousePos = Event.current.mousePosition - pos.position; // position inside drawRect
                 mousePos += scrollPos;// position inside scrollRect
-                int clickedElement =(int)( mousePos.y / EditorGUIUtility.singleLineHeight);
-               // Debug.Log("click element " + clickedElement);
+                int clickedElement = (int)(mousePos.y / EditorGUIUtility.singleLineHeight);
+                // Debug.Log("click element " + clickedElement);
                 Event.current.Use();
                 selectedElement = clickedElement;
-                GUI.FocusControl("Next");
+                GUI.FocusControl(nextControlName);
                 return selectedElement;
             }
+            else
+                hasFocus = false;
         }
         if (Event.current.isKey)
         {
@@ -279,7 +283,7 @@ public class EditorPopupWithTextFilter
             if (Event.current.keyCode == KeyCode.Return && selectedElement != -1)
             {
                 Event.current.Use();
-                GUI.FocusControl("Next");
+                GUI.FocusControl(nextControlName);
                 return selectedElement;
             }
         }

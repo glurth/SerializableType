@@ -10,8 +10,8 @@ namespace EyE.EditorUnity.Extensions
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
     public class SystemTypePropertyDrawer : PropertyDrawer
     {
-        List<string> allTypesCashedNames = null;
-        List<string> allTypesCashedAQNames = null;
+        static List<string> allTypesCashedNames = null;
+        static List<string> allTypesCashedAQNames = null;
 
         EditorPopupWithTextFilter filterPopupList = null;
         
