@@ -102,20 +102,24 @@ namespace EyE.EditorUnity.Extensions
         }
 
         /// <summary>
-        /// Gets the limiting namespace from the property drawer's attribute.
+        /// Gets the limiting namespace from the property: 
+        ///   -it gets the field and containing object type
+        ///   - then useses that information to check if a EditorLimitSelectionToNamespaceAttribute has been applied to it.
+        ///   -if so, it gets the EditorLimitSelectionToNamespaceAttribute's "Namespace" parameter and returns it.
         /// </summary>
         /// <param name="property">The serialized property being drawn.</param>
-        /// <returns>The limiting namespace, or null if no namespace is specified.</returns>
+        /// <returns>The limiting namespace, or null if no namespace is specified. It also returns null if it is unable to find field from the property.</returns>
         public static string GetLimitingNamespace(SerializedProperty property)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
 
             // Get the field info and attribute
-            var fieldInfo = property.serializedObject.targetObject.GetType().GetField(property.propertyPath);
+            FieldInfo fieldInfo = property.GetFieldInfo();// serializedObject.targetObject.GetType().GetField(property.propertyPath);
             if (fieldInfo == null) return null;
 
-            var attribute = Attribute.GetCustomAttribute(fieldInfo, typeof(EditorLimitSelectionToNamespaceAttribute)) as EditorLimitSelectionToNamespaceAttribute;
-            return attribute?.Namespace;
+            EditorLimitSelectionToNamespaceAttribute attribute = Attribute.GetCustomAttribute(fieldInfo, typeof(EditorLimitSelectionToNamespaceAttribute)) as EditorLimitSelectionToNamespaceAttribute;
+            if(attribute==null) return null;
+            return attribute.Namespace;
         }
 
     }

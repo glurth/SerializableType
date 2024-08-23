@@ -225,6 +225,15 @@ namespace EyE.EditorUnity.Extensions
 
         };
 
+        public static FieldInfo GetFieldInfo(this SerializedProperty property)
+        {
+            System.Type type = property.serializedObject.targetObject.GetType();
+            FieldInfo fieldAtPath = GetFieldViaPath(type, property.propertyPath);
+            //FieldInfo fieldAtPath = type.GetField(property.propertyPath, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            return fieldAtPath;
+            
+        }
+
         /// <summary>
         /// This SerializedPropety extension function takes an instance of a Serialized Property and returns the System.Type of the field it represents.
         /// If the property is an array or list element, the type returned will be the type of the elements in the array.
