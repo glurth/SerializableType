@@ -20,10 +20,12 @@ public class EditorPopupWithTextFilter
     bool textHadFocusLastPass = false;
     //recorded internally used to make draw & selection decisions
     bool hasFocus = false;
+
+    bool scrollPoppedOut = false;
+
     //the filtered list displayed in the drop down
     List<string> fiteredListConents = new List<string>();
-    //set and checked internally for display control
-    bool overrideHideList = false;
+
     //placement and size of the draw popup window
     Rect popupPosition;
     // computed currently drawn height of the control (with/without dropdown expanded), summed internally- provided to user via GetHeight
@@ -31,8 +33,28 @@ public class EditorPopupWithTextFilter
     // current scroll position of list, only y used
     Vector2 scrollPos = Vector2.zero;
 
-    string filterControlName = "FilterText" + new GUID().ToString();
-    string nextControlName = "Next" + new GUID().ToString();
+    string _filterControlName = null;
+    string _nextControlName = null;
+
+    string filterControlName
+    {
+        get
+        {
+            if (_filterControlName == null)
+                _filterControlName = "FilterText" + System.Guid.NewGuid().ToString();
+            return _filterControlName;
+        }
+    }
+    string nextControlName
+    {
+        get
+        {
+            if (_nextControlName == null)
+                _nextControlName = "Next" + System.Guid.NewGuid().ToString();
+            return _nextControlName;
+        }
+    }
+       
 
     //user adjustable value- hight of dropdown. default 300
     public float popupMaxHeight = 300f;
@@ -56,7 +78,6 @@ public class EditorPopupWithTextFilter
         return drawnHeight;
     }
 
-    
     /// <summary>
     /// Public Function called by user to draw the filter/selection text control, and if appropriate, popout list.
     /// </summary>
@@ -66,22 +87,47 @@ public class EditorPopupWithTextFilter
     /// <returns></returns>
     public int Draw(Rect position, List<string> fullList, GUIContent label = null)
     {
+
+        string focusedControlName = GUI.GetNameOfFocusedControl();
+        bool hadFocus = hasFocus;
+        bool filterControlHasFocus = focusedControlName == filterControlName;
+        bool scrollControlHasFocus = focusedControlName == nextControlName;
+        //Debug.Log("focuses  filter:" + filterControlHasFocus + " scroll: " + scrollControlHasFocus + " focus name: "+ focusedControlName);
+        hasFocus = filterControlHasFocus || scrollControlHasFocus;
+        if (hadFocus && !hasFocus)  //if we just LOST focus
+        {
+            scrollPoppedOut = false;
+            HandleUtility.Repaint(); // Repaints the control
+        }
+        if (hasFocus && Event.current.type == EventType.KeyDown)//check for key events now before consumed
+        {
+            //Debug.Log("keydown while filter focused");
+            scrollPoppedOut = true;
+        }
+
+        bool mouseOverControl = position.Contains(Event.current.mousePosition);
         // Debug.Log($"Draw function Detected event: {Event.current.type}");
         position.height = EditorGUIUtility.singleLineHeight;
-        
         if (label == null) label = new GUIContent("Filter");
 
         GUI.SetNextControlName(filterControlName);
         string newFilter = EditorGUI.TextField(position, label, currentFilterText);
 
-        GUI.SetNextControlName(nextControlName);
+        scrollPoppedOut &= hasFocus;
+        if (mouseOverControl && Event.current.type == EventType.ScrollWheel)
+        {
+           // Debug.Log("Scroll on mouseover filter");
+            GUI.FocusControl(filterControlName);
+            scrollPoppedOut = true;
+            hasFocus = true;
+        }
+
         position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         drawnHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         if (textChanged || newFilter != currentFilterText) //if filter text has been changed by user- recompute filter list
         {
             //Debug.Log("FilterString change detected.  current filtertext: '"+ currentFilterText+"'" + "new filtertext: '" + newFilter + "'");
             textChanged = false;
-            overrideHideList = false;
             string previousSelectedText = "";
             if (selectedElement != -1 && fiteredListConents != null && fiteredListConents.Count > selectedElement)
                 previousSelectedText = fiteredListConents[selectedElement];
@@ -105,39 +151,30 @@ public class EditorPopupWithTextFilter
                 foundPreviousSelectionAt = fiteredListConents.IndexOf(previousSelectedText);
             selectedElement = foundPreviousSelectionAt;
         }// end filter text changed
-
-
-        //  Debug.Log("Checking Focus");
-
-        if (!hasFocus && Event.current.type != EventType.ScrollWheel)
-            hasFocus = GUI.GetNameOfFocusedControl() == filterControlName;
-        if (hasFocus)
+        if (scrollPoppedOut)
         {
-            //Debug.Log("Filter text has focus.  had it lastpass:"+ textHadFocusLastPass);
             popupPosition = position;
             popupPosition.xMin += 30;
             popupPosition.height = popupMaxHeight;
 
-            float maxHeight = (fiteredListConents.Count+2) * EditorGUIUtility.singleLineHeight;
+            float maxHeight = (fiteredListConents.Count + 2) * EditorGUIUtility.singleLineHeight;
             if (maxHeight < popupPosition.height)
                 popupPosition.height = maxHeight;
 
             int hoverSelection = -1;
             if (!textHadFocusLastPass)
             {
-                overrideHideList = false;
                 hoverSelection = HoverTextListWindow(popupPosition, -1);
             }
             else
             {
-                if (!overrideHideList)
-                    hoverSelection = HoverTextListWindow(popupPosition);
+                hoverSelection = HoverTextListWindow(popupPosition);
             }
-            textHadFocusLastPass = true;
+            if (filterControlHasFocus)
+                textHadFocusLastPass = true;
             if (hoverSelection != -1)// a list element has been selected
             {
                 //Debug.Log("Selected list element: " + hoverSelection);
-                overrideHideList = true;
                 if (hoverSelection < fiteredListConents.Count)
                     currentFilterText = fiteredListConents[hoverSelection];
                 else
@@ -154,22 +191,25 @@ public class EditorPopupWithTextFilter
                     if (s.ToLower().Contains(filterAsLowercase))
                         fiteredListConents.Add(s);
                 }
+                selectedElement = fiteredListConents.IndexOf(currentFilterText);
             }
         }//filter text has focus
         else
         {
-            textHadFocusLastPass = false;
-            //Debug.Log(currentFilterText + $" - not focused event: {Event.current.type}");
-            HandleEvents(popupPosition);
+            if (!filterControlHasFocus)
+                textHadFocusLastPass = false;
         }
-
+        // Debug.Log(currentFilterText + $" - not focused event: {Event.current.type}");
+        HandleEvents(popupPosition);
         // Debug.Log("current filtertext set to: '" + currentFilterText + "'");
+
         //selected element is element in index into "containing" not index into fullList, which is what we need to return
         if (selectedElement == -1 || currentFilterText.Length < 1) return -1;
 
         return fullList.IndexOf(currentFilterText);
 
     }
+
 
 
     /// <summary>
@@ -195,7 +235,8 @@ public class EditorPopupWithTextFilter
 
         //Debug.Log("drawing list rect height:" + pos.ToString());
         EditorGUI.DrawRect(pos, Color.white);
-        scrollPos=GUI.BeginScrollView(pos, scrollPos, listSizeRect);
+        GUI.SetNextControlName(nextControlName);
+        scrollPos =GUI.BeginScrollView(pos, scrollPos, listSizeRect);
         int counter = 0;
         foreach (string s in fiteredListConents)
         {
@@ -213,6 +254,7 @@ public class EditorPopupWithTextFilter
     }
     int HandleScrollEventOnly(Rect pos)
     {
+
         // Handle scroll wheel events
         if (Event.current.type == EventType.ScrollWheel)
         {
@@ -220,8 +262,8 @@ public class EditorPopupWithTextFilter
             scrollPos.y += Event.current.delta.y * EditorGUIUtility.singleLineHeight;
             scrollPos.y = Mathf.Clamp(scrollPos.y, 0, fiteredListConents.Count * EditorGUIUtility.singleLineHeight - pos.height);
 
-            Event.current.Use();
-            GUI.FocusControl(filterControlName);
+          //  Event.current.Use();
+         //   GUI.FocusControl(filterControlName);
         }
         return -1;
     }
