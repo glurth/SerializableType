@@ -4,49 +4,75 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Reflection;
+using EyE.Unity;
 //using EyE.Sys.Reflection;
-namespace EyE.EditorUnity.Extensions
+namespace EyE.EditorUnity
 {
+    
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
     public class SystemTypePropertyDrawer : PropertyDrawer
     {
-        static List<string> allTypesCashedNames = null;
+        //parallel singleton lists - caches of type look ups
+        static List<GUIContent> allTypesCashedNames = null;
         static List<string> allTypesCashedAQNames = null;
-
-        EditorPopupWithTextFilter filterPopupList = null;
+        List<GUIContent> limitedNamespaceTypesCashedNames = null;
+        List<string> limitedNamespaceTypesCashedAQNames = null;
+        int selectedIndex =-1;
         
+
+        Dictionary<string, EditorFilteredFoldoutList> filterPopupListByPropertyPath = new Dictionary<string, EditorFilteredFoldoutList>();
+        EditorFilteredFoldoutList GetOrCreatePopup(SerializedProperty prop, string defaultFilterText)
+        {
+            EditorFilteredFoldoutList filterPopupList;
+            string key = GenerateKeyID(prop);
+            if (!filterPopupListByPropertyPath.TryGetValue(key, out filterPopupList))//lazy create
+            {
+               // Debug.Log("Creating new EditorPopupWithTextFilter for property: " + prop.propertyPath);
+                filterPopupList = new EditorFilteredFoldoutList(key);
+                filterPopupList.SetText(defaultFilterText);
+                filterPopupListByPropertyPath.Add(key, filterPopupList);
+            }
+            return filterPopupList;
+        }
+        string GenerateKeyID(SerializedProperty prop)
+        {
+            return prop.serializedObject.targetObject.GetInstanceID() + "_" + prop.propertyPath;
+        }
+
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-           // Debug.Log($"SystemTypePropertyDrawer Detected event: {Event.current.type}");
-            SerializableSystemType seriTypeObj = (SerializableSystemType)property.GetValue();
-            if (filterPopupList == null)
+            if (Event.current.type == EventType.Layout)
             {
-                filterPopupList = new EditorPopupWithTextFilter();
-                
-                //SerializableSystemType seriTypeObj = (SerializableSystemType)GetValue(property);
-                if (seriTypeObj.type != null)
-                {
-                    //EditorGUI.LabelField(position, "TypeName", seriTypeObj.type.Name);
-                    filterPopupList.SetText(seriTypeObj.type.Name);
-                }
-                else
-                {
-                    filterPopupList.SetText("");
-                }
+                filterPopupListByPropertyPath.Clear();
             }
 
-            if (allTypesCashedNames == null)
+            // Debug.Log($"SystemTypePropertyDrawer Detected event: {Event.current.type}");
+
+            SerializedProperty typeNameProperty = property.FindPropertyRelative("typeName");
+            Type foundType = Type.GetType(typeNameProperty.stringValue);
+            string foundTypeShortName = "*";
+            string typeFQName = "*";
+            if (foundType != null)
             {
-                string limitToNamespace = GetLimitingNamespace(property);//new
+                typeFQName = foundType.FullName;
+                label.tooltip = typeFQName;
+                foundTypeShortName = foundType.Name;
+            }
+            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property, foundTypeShortName);
+
+            if (allTypesCashedNames == null) // lazy load
+            {
+                //string limitToNamespace = GetLimitingNamespace();//new
                 List<Type> typesFound = new List<Type>();
-                allTypesCashedNames = new List<string>();
+                allTypesCashedNames = new List<GUIContent>();
                 allTypesCashedAQNames = new List<string>();
                 foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
                 {
 
                     foreach (Type t in asm.GetExportedTypes())
                     {
-                        if(limitToNamespace==null || t.Namespace == limitToNamespace)//new
+                        //if(limitToNamespace==null || t.Namespace == limitToNamespace)//new
                             typesFound.Add(t);
                     }
                 }
@@ -58,46 +84,73 @@ namespace EyE.EditorUnity.Extensions
                 //allTypesCashedNames.Sort();
                 foreach (Type t in typesFound)
                 {
-                    allTypesCashedNames.Add(t.Name);
+                    allTypesCashedNames.Add(new GUIContent(t.Name,t.Namespace));
                     allTypesCashedAQNames.Add(t.AssemblyQualifiedName);
                 }
-            }
+            }// end init singlton
 
-            string typeFQName = "*";
-            int selected = filterPopupList.Draw(position, allTypesCashedNames, label);
-
-            if (selected != -1)
+            if (limitedNamespaceTypesCashedNames == null)
             {
-
-                string selectedTypeName = allTypesCashedAQNames[selected];
-
-                if (selectedTypeName != null && selectedTypeName != "")
+                limitedNamespaceTypesCashedNames = new List<GUIContent>();
+                limitedNamespaceTypesCashedAQNames = new List<string>();
+                string limitToNamespace = GetLimitingNamespace();
+                if (string.IsNullOrEmpty(limitToNamespace))
                 {
-                    //Debug.Log("Searching for type: " + selectedTypeName);
-                    seriTypeObj.type = Type.GetType(selectedTypeName);
+                    limitedNamespaceTypesCashedNames = allTypesCashedNames;
+                    limitedNamespaceTypesCashedAQNames = allTypesCashedAQNames;
                 }
-                property.serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
-            }
+                else
+                {
+                    foreach (string FQname in allTypesCashedAQNames)
+                    {
+                        Type t = Type.GetType(FQname);
+                        if (t!=null && t.Namespace!=null && t.Namespace.Contains(limitToNamespace))
+                        {
+                            limitedNamespaceTypesCashedNames.Add(new GUIContent(t.Name, t.Namespace));
+                            limitedNamespaceTypesCashedAQNames.Add(FQname);
+                        }
+                    }
+                }
+            }// init filtered list
 
-            if (seriTypeObj.type != null)
+            selectedIndex = filterPopupList.Draw(position, limitedNamespaceTypesCashedNames, label);
+
+            if (selectedIndex != -1)
             {
-                typeFQName = seriTypeObj.type.FullName;
+
+                GUIContent selectedTypeName = limitedNamespaceTypesCashedNames[selectedIndex];
+                int indexInAllTypesCashedNames = allTypesCashedNames.FindIndex((x) => { return x.text == selectedTypeName.text; });
+                if (indexInAllTypesCashedNames == -1) 
+                    Debug.LogError("Unexpected: unable to find " + selectedTypeName.text + " in allTypesCashedNames");
+                string fqName = allTypesCashedAQNames[indexInAllTypesCashedNames];
+                if (selectedTypeName != null && !string.IsNullOrEmpty(selectedTypeName.text))
+                {
+                 //   Debug.Log($"Assigning selection to: {typeNameProperty.propertyPath} selected = {fqName}");
+                    typeNameProperty.stringValue = fqName;
+                    //property.serializedObject.ApplyModifiedProperties();
+                    selectedIndex = -1;
+                }
             }
 
             position.height = EditorGUIUtility.singleLineHeight;
             position.y += filterPopupList.GetHeight() + EditorGUIUtility.standardVerticalSpacing;
-            //position.y += position.height + EditorGUIUtility.standardVerticalSpacing;
-            GUI.enabled = false;
-            EditorGUI.TextField(position, "FQ Name", typeFQName);
-            GUI.enabled = true;
-
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            float height = 0;// EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            SerializedProperty typeNameProperty = property.FindPropertyRelative("typeName");
+            Type foundType = Type.GetType(typeNameProperty.stringValue);
+            string defaultFilterValue = "*";
+            if(foundType!=null) defaultFilterValue = foundType.Name;
+
+            //float popupheight= EditorFilterableDropdown.FilterableDropdownHeight("SelectedType:", selectedIndex, limitedNamespaceTypesCashedNames, ref popupData);
+            //height += popupheight;
+            
+            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property, defaultFilterValue);
+
             if (filterPopupList != null)
                 height += filterPopupList.GetHeight();
+            
             return height;
         }
 
@@ -109,18 +162,22 @@ namespace EyE.EditorUnity.Extensions
         /// </summary>
         /// <param name="property">The serialized property being drawn.</param>
         /// <returns>The limiting namespace, or null if no namespace is specified. It also returns null if it is unable to find field from the property.</returns>
-        public static string GetLimitingNamespace(SerializedProperty property)
+        string GetLimitingNamespace()
         {
-            if (property == null) throw new ArgumentNullException(nameof(property));
+           // if (property == null) throw new ArgumentNullException(nameof(property));
 
             // Get the field info and attribute
-            FieldInfo fieldInfo = property.GetFieldInfo();// serializedObject.targetObject.GetType().GetField(property.propertyPath);
+            FieldInfo fieldInfo = this.fieldInfo;// property.fie.GetFieldInfo();// serializedObject.targetObject.GetType().GetField(property.propertyPath);
             if (fieldInfo == null) return null;
 
             EditorLimitSelectionToNamespaceAttribute attribute = Attribute.GetCustomAttribute(fieldInfo, typeof(EditorLimitSelectionToNamespaceAttribute)) as EditorLimitSelectionToNamespaceAttribute;
             if(attribute==null) return null;
+            if (string.IsNullOrEmpty(attribute.Namespace))
+                return fieldInfo.DeclaringType.Namespace;
             return attribute.Namespace;
         }
 
     }
+
+
 }
