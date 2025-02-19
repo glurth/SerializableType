@@ -90,6 +90,7 @@ public class EditorFilteredFoldoutList
 
             filterDisplayText = newFilter;
             RecomputeFilteredDisplayList();
+            scrollOpen = true;
             //find index of filterText in filtered List, if any
             int foundIndex = displayList.FindIndex((x) => { return x.text == filterDisplayText; });
             if (foundIndex != -1)
@@ -106,7 +107,7 @@ public class EditorFilteredFoldoutList
         if (!scrollOpen) scrollRect.height = 0;
         if (scrollOpen)
         {
-            Debug.Log("scroll open on id:" + idString + " focused control: " + focusedControlName);
+          //  Debug.Log("scroll open on id:" + idString + " focused control: " + focusedControlName);
             DrawList(scrollRect);
             HandleListEvents(scrollRect);
             if (focusedControlName == scrollControlName)// || focusedControlName == filterDisplayText)
@@ -125,18 +126,22 @@ public class EditorFilteredFoldoutList
     void RecomputeFilteredDisplayList()
     {
         string filterStringToUse = "*";
-
+        Debug.Log("recomputing list. filter is: " + filterDisplayText);
         if (fullListRef.FindIndex((x) => { return x.text == filterDisplayText; }) != -1)
         {
-            filterStringToUse = filterDisplayText;
+            Debug.Log("filter found in fullList");
+           
             displayList = fullListRef;
             return;
         }
-                
+        filterStringToUse = filterDisplayText;
         if (filterStringToUse == "" || filterStringToUse == "*" || filterStringToUse == string.Empty)
+        {
             displayList = fullListRef;
+        }
         else
         {
+            Debug.Log("filtering now");
             string filterAsLowercase = filterStringToUse.ToLower();
             int lastStartsWidthIndex = 0;
             displayList = new List<GUIContent>();
@@ -154,6 +159,7 @@ public class EditorFilteredFoldoutList
         }
 
     }
+   
     string setFocusControlName=null;
     void SetFocusScroll() { }// setFocusControlName = scrollControlName; }// GUI.FocusControl(setFocusControlName); }
     void SetFocusFilter() { }// setFocusControlName = filterControlName; }// GUI.FocusControl(setFocusControlName); }

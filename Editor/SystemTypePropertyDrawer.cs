@@ -25,7 +25,7 @@ namespace EyE.EditorUnity
         {
             EditorFilteredFoldoutList filterPopupList;
             string key = GenerateKeyID(prop);
-            Debug.Log("Popup list count: " + filterPopupListByPropertyPath.Count);
+          //  Debug.Log("Popup list count: " + filterPopupListByPropertyPath.Count);
             if (!filterPopupListByPropertyPath.TryGetValue(key, out filterPopupList))//lazy create
             {
                // Debug.Log("Creating new EditorPopupWithTextFilter for property: " + prop.propertyPath);
