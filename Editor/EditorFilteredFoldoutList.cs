@@ -16,6 +16,15 @@ public class EditorFilteredFoldoutList
         filterControlName = "FilterText" + idString;
         scrollControlName = "Scroll" + idString;
     }
+    public EditorFilteredFoldoutList(string controlID, string startingFilterText)
+    {
+        Debug.Log("Creating new EditorFilteredFoldoutList: " + controlID);
+        idString = controlID;
+        filterControlName = "FilterText" + idString;
+        scrollControlName = "Scroll" + idString;
+        filterDisplayText = startingFilterText;
+    }
+
     string idString;
 
 
@@ -53,6 +62,7 @@ public class EditorFilteredFoldoutList
         if (fullListRef != fullList)
         {
             fullListRef = fullList;
+            recomputeDisplayList = true;
         }
         string focusedControlName = GUI.GetNameOfFocusedControl();
 

@@ -20,35 +20,28 @@ namespace EyE.EditorUnity
         int selectedIndex =-1;
         
 
-        Dictionary<string, EditorFilteredFoldoutList> filterPopupListByPropertyPath = new Dictionary<string, EditorFilteredFoldoutList>();
+        static Dictionary<string, EditorFilteredFoldoutList> filterPopupListByPropertyPath = new Dictionary<string, EditorFilteredFoldoutList>();
         EditorFilteredFoldoutList GetOrCreatePopup(SerializedProperty prop, string defaultFilterText)
         {
             EditorFilteredFoldoutList filterPopupList;
             string key = GenerateKeyID(prop);
+            Debug.Log("Popup list count: " + filterPopupListByPropertyPath.Count);
             if (!filterPopupListByPropertyPath.TryGetValue(key, out filterPopupList))//lazy create
             {
                // Debug.Log("Creating new EditorPopupWithTextFilter for property: " + prop.propertyPath);
-                filterPopupList = new EditorFilteredFoldoutList(key);
-                filterPopupList.SetText(defaultFilterText);
+                filterPopupList = new EditorFilteredFoldoutList(key, defaultFilterText);
                 filterPopupListByPropertyPath.Add(key, filterPopupList);
             }
             return filterPopupList;
         }
         string GenerateKeyID(SerializedProperty prop)
         {
-            return prop.serializedObject.targetObject.GetInstanceID() + "_" + prop.propertyPath;
+            return prop.serializedObject.targetObject.GetInstanceID() + "_" + prop.propertyPath.GetHashCode();
         }
 
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (Event.current.type == EventType.Layout)
-            {
-                filterPopupListByPropertyPath.Clear();
-            }
-
-            // Debug.Log($"SystemTypePropertyDrawer Detected event: {Event.current.type}");
-
             SerializedProperty typeNameProperty = property.FindPropertyRelative("typeName");
             Type foundType = Type.GetType(typeNameProperty.stringValue);
             string foundTypeShortName = "*";
