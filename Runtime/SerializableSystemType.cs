@@ -103,6 +103,7 @@ namespace EyE.Unity
         // Override GetHashCode method
         public override int GetHashCode()
         {
+            if (type == null) return 0;
             return type.GetHashCode();
         }
     }
