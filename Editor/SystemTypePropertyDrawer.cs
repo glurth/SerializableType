@@ -130,20 +130,13 @@ namespace EyE.EditorUnity
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float height = 0;// EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            SerializedProperty typeNameProperty = property.FindPropertyRelative("typeName");
-            Type foundType = Type.GetType(typeNameProperty.stringValue);
-            string defaultFilterValue = "*";
-            if(foundType!=null) defaultFilterValue = foundType.Name;
+            float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-            //float popupheight= EditorFilterableDropdown.FilterableDropdownHeight("SelectedType:", selectedIndex, limitedNamespaceTypesCashedNames, ref popupData);
-            //height += popupheight;
-            
-            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property, defaultFilterValue);
+            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property,null);
 
             if (filterPopupList != null)
-                height += filterPopupList.GetHeight();
-            
+                height = filterPopupList.GetHeight();
+            height += EditorGUIUtility.standardVerticalSpacing;
             return height;
         }
 

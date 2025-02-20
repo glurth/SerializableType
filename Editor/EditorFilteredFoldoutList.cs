@@ -19,7 +19,7 @@ public class EditorFilteredFoldoutList
     }
     public EditorFilteredFoldoutList(string controlID, string startingFilterText)
     {
-        Debug.Log("Creating new EditorFilteredFoldoutList: " + controlID);
+       // Debug.Log("Creating new EditorFilteredFoldoutList: " + controlID);
         idString = controlID;
         filterControlName = "FilterText" + idString;
         scrollControlName = "Scroll" + idString;
@@ -109,7 +109,7 @@ public class EditorFilteredFoldoutList
         
         Rect scrollRect = position;
         scrollRect.yMin += filterRect.height + EditorGUIUtility.standardVerticalSpacing;//make room for filter
-        if (!scrollOpen) scrollRect.height = 0;
+        scrollRect.height = scrollMaxHeight;        
         if (scrollOpen)
         {
           //  Debug.Log("scroll open on id:" + idString + " focused control: " + focusedControlName);
@@ -302,7 +302,7 @@ public class EditorFilteredFoldoutList
 
     void DrawList(Rect pos)
     {
-
+        
         Rect listSizeRect = new Rect(Vector2.zero, pos.size);
         listSizeRect.height = displayList.Count * EditorGUIUtility.singleLineHeight;
         if (!scrollOpen) listSizeRect.height = 0;
