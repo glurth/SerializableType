@@ -15,6 +15,7 @@ public class EditorFilteredFoldoutList
         idString = controlID;
         filterControlName = "FilterText" + idString;
         scrollControlName = "Scroll" + idString;
+        scrollOpen = false;
     }
     public EditorFilteredFoldoutList(string controlID, string startingFilterText)
     {
@@ -80,9 +81,11 @@ public class EditorFilteredFoldoutList
 
         string newFilter = "";
         //Debug.Log("filter field text :" + filterDisplayText);
+        EditorGUI.BeginChangeCheck();
         GUI.SetNextControlName(filterControlName);
         newFilter = EditorGUI.TextField(filterRect, label, filterDisplayText);
-        bool userChangeDetected = (newFilter != filterDisplayText);
+
+        bool userChangeDetected = EditorGUI.EndChangeCheck();// (newFilter != filterDisplayText);
         recomputeDisplayList |= userChangeDetected;  //force recompute if text changed by user
         //check for need to recompute filter list
         if (recomputeDisplayList) 
