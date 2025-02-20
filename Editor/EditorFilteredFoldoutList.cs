@@ -23,6 +23,7 @@ public class EditorFilteredFoldoutList
         filterControlName = "FilterText" + idString;
         scrollControlName = "Scroll" + idString;
         filterDisplayText = startingFilterText;
+        scrollOpen = false;
     }
 
     string idString;
@@ -43,7 +44,7 @@ public class EditorFilteredFoldoutList
     }
 
     string filterDisplayText;
-    bool scrollOpen;
+    bool scrollOpen=false;
     /// <summary>
     /// index into the filtered list, of the current filter text.  will be -1 if the filter text does not match any items on the list
     /// </summary>
@@ -81,8 +82,8 @@ public class EditorFilteredFoldoutList
         //Debug.Log("filter field text :" + filterDisplayText);
         GUI.SetNextControlName(filterControlName);
         newFilter = EditorGUI.TextField(filterRect, label, filterDisplayText);
-
-        recomputeDisplayList |= (newFilter != filterDisplayText);  //force recompute if text changed by user
+        bool userChangeDetected = (newFilter != filterDisplayText);
+        recomputeDisplayList |= userChangeDetected;  //force recompute if text changed by user
         //check for need to recompute filter list
         if (recomputeDisplayList) 
         {
@@ -90,7 +91,6 @@ public class EditorFilteredFoldoutList
 
             filterDisplayText = newFilter;
             RecomputeFilteredDisplayList();
-            scrollOpen = true;
             //find index of filterText in filtered List, if any
             int foundIndex = displayList.FindIndex((x) => { return x.text == filterDisplayText; });
             if (foundIndex != -1)
@@ -98,6 +98,8 @@ public class EditorFilteredFoldoutList
                 scrollSelectionIndex = foundIndex;
             }
         }
+        if (userChangeDetected)
+            scrollOpen = true;
 
 
         //draw scroll area, if open
@@ -241,10 +243,7 @@ public class EditorFilteredFoldoutList
             {
                 scrollOpen = !scrollOpen;
                 SetFocusFilter();
-
-                HandleUtility.Repaint();
                 EditorWindow.focusedWindow.Repaint();
-               
             }
 
         }
@@ -286,9 +285,13 @@ public class EditorFilteredFoldoutList
                     filterDisplayText = displayList[scrollSelectionIndex].text;
                 Event.current.Use();
                 scrollOpen = false;
-                HandleUtility.Repaint();
                 EditorWindow.focusedWindow.Repaint();
                 SetFocusFilter();
+            }
+            if (Event.current.keyCode == KeyCode.Escape && scrollSelectionIndex != -1)
+            {
+                scrollOpen = false;
+                EditorWindow.focusedWindow.Repaint();
             }
         }
 
@@ -332,7 +335,6 @@ public class EditorFilteredFoldoutList
             }
         }
         GUI.EndScrollView();
-        HandleUtility.Repaint();
         EditorWindow.focusedWindow.Repaint();
         return;
     }
