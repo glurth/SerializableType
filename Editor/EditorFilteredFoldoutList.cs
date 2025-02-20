@@ -23,7 +23,8 @@ public class EditorFilteredFoldoutList
         idString = controlID;
         filterControlName = "FilterText" + idString;
         scrollControlName = "Scroll" + idString;
-        filterDisplayText = startingFilterText;
+        if(startingFilterText!=null)
+            filterDisplayText = startingFilterText;
         scrollOpen = false;
     }
 

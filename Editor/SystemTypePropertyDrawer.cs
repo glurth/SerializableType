@@ -132,7 +132,15 @@ namespace EyE.EditorUnity
         {
             float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property,null);
+
+            SerializedProperty typeNameProperty = property.FindPropertyRelative("typeName");
+            Type foundType = Type.GetType(typeNameProperty.stringValue);
+            string foundTypeShortName = "*";
+            if (foundType != null)
+            {
+                foundTypeShortName = foundType.Name;
+            }
+            EditorFilteredFoldoutList filterPopupList = GetOrCreatePopup(property, foundTypeShortName);
 
             if (filterPopupList != null)
                 height = filterPopupList.GetHeight();
