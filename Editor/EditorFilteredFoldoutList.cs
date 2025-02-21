@@ -74,6 +74,12 @@ public class EditorFilteredFoldoutList
         filterRect.height = EditorGUIUtility.singleLineHeight;
 
         if (label == null) label = new GUIContent("Filter");
+        if (string.IsNullOrEmpty(label.tooltip))
+        {
+            int fullListCurrentIndex = fullList.FindIndex((x) => { return x.text == filterDisplayText; });
+            if(fullListCurrentIndex!=-1)
+                label.tooltip = fullList[fullListCurrentIndex].tooltip;
+        }
         //catch events the textfield will use
         if (focusedControlName == filterControlName)
         {
