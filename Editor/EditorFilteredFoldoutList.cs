@@ -132,10 +132,10 @@ public class EditorFilteredFoldoutList
     void RecomputeFilteredDisplayList()
     {
         string filterStringToUse = "*";
-        Debug.Log("recomputing list. filter is: " + filterDisplayText);
+       // Debug.Log("recomputing list. filter is: " + filterDisplayText);
         if (fullListRef.FindIndex((x) => { return x.text == filterDisplayText; }) != -1)
         {
-            Debug.Log("filter found in fullList");
+         //   Debug.Log("filter found in fullList");
            
             displayList = fullListRef;
             return;
@@ -147,7 +147,7 @@ public class EditorFilteredFoldoutList
         }
         else
         {
-            Debug.Log("filtering now");
+           // Debug.Log("filtering now");
             string filterAsLowercase = filterStringToUse.ToLower();
             int lastStartsWidthIndex = 0;
             displayList = new List<GUIContent>();
@@ -163,7 +163,8 @@ public class EditorFilteredFoldoutList
                 }
             }
         }
-
+        scrollPos = Vector2.zero;
+        scrollSelectionIndex = 0;
     }
    
     string setFocusControlName=null;
@@ -257,7 +258,7 @@ public class EditorFilteredFoldoutList
         if (Event.current.type == EventType.KeyDown)//Event.current.isKey)// focusedControlAtStart==filterControlName)
         {
          
-            if (Event.current.keyCode == KeyCode.UpArrow && scrollSelectionIndex > 0)
+            if (Event.current.keyCode == KeyCode.UpArrow && scrollSelectionIndex > 0 && displayList.Count>0)
             {
                 if (scrollOpen)
                 {
