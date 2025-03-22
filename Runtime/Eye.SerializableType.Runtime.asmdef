@@ -1,9 +1,8 @@
 {
-    "name": "Glurth.SerializableType",
-    "references": [
-    ],
-    "includePlatforms": [
-    ],
+    "name": "Eye.SerializableType.Runtime",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

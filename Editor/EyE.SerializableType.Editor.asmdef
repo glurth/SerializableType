@@ -1,7 +1,8 @@
 {
-    "name": "Glurth.SerializableType.Editor",
+    "name": "EyE.SerializableType.Editor",
+    "rootNamespace": "",
     "references": [
-        "Glurth.SerializableType"
+        "Eye.SerializableType"
     ],
     "includePlatforms": [
         "Editor"
