@@ -62,11 +62,13 @@ namespace EyE.EditorUnity
                 allTypesCashedAQNames = new List<string>();
                 foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
                 {
-
-                    foreach (Type t in asm.GetExportedTypes())
+                    if (!asm.IsDynamic)
                     {
-                        //if(limitToNamespace==null || t.Namespace == limitToNamespace)//new
+                        foreach (Type t in asm.GetExportedTypes())
+                        {
+                            //if(limitToNamespace==null || t.Namespace == limitToNamespace)//new
                             typesFound.Add(t);
+                        }
                     }
                 }
                 typesFound.Sort(
