@@ -1,4 +1,4 @@
-## SerializableSystemType - Unity Package for Type Serialization
+## Serializable Type - Unity Package for Type Serialization
 
 This Unity package provides functionalities for serializing and deserializing `System.Type` objects during development. It includes two classes:
 
@@ -62,4 +62,18 @@ public class MyMonoBehaviour : MonoBehaviour
 
 ### Editor
 Contains a property drawer that allow users to select a type from a filterable drop down list of all types.
-![Editor Example](https://github.com/glurth/SerializableType/blob/main/EditorExample.png)
+![Editor Example](EditorExample.png)
+
+### Contributions
+
+Contributions, issues, and feature requests are welcome! Please submit them via the GitHub repository. Note: Due to licensing, contributions can only be included with explicit written permission from the copyright holder.
+
+## License
+
+This package is licensed under the EyE Dual-Licensing Agreement.
+
+It provides free, perpetual use for indie developers and non-commercial projects whose teams had Total Gross Receipts under $100,000 USD in the previous fiscal year.
+
+Organizations exceeding this threshold must obtain a Perpetual Commercial License (PCL) for each named commercial project.
+
+Please review the full terms in [LICENSE.md](LICENSE.md) before commercial use.
