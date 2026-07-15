@@ -7,7 +7,7 @@ namespace EyE.Unity
     /// This class facilitates serialization of System.Type objects in Unity by converting them to strings (using AssemblyQualifiedName) during serialization and back to types during deserialization.
     /// </summary>
     [System.Serializable]
-    public class SerializableSystemType : ISerializationCallbackReceiver
+    public class SerializableSystemType : ISerializationCallbackReceiver, IEquatable<SerializableSystemType>
     {
         public static bool logWarnings = false;
 
@@ -105,6 +105,11 @@ namespace EyE.Unity
         {
             if (type == null) return 0;
             return type.GetHashCode();
+        }
+
+        public bool Equals(SerializableSystemType other)
+        {
+            return type == other.type;
         }
     }
 
